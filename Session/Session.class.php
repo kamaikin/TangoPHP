@@ -11,7 +11,7 @@ class TSession{
 	/**
 	* 
 	*/
-	rivate $_flash=FALSE;
+	private $_flash=FALSE;
 
 	public function __construct() {
 		session_start();
@@ -19,6 +19,7 @@ class TSession{
 			$this->_flash=$_SESSION['__TANGOFLASH__'];
 			unset($_SESSION['__TANGOFLASH__']);
 		}
+		return $this;
 	}
 
 	public function get($key){
@@ -32,13 +33,26 @@ class TSession{
 
 	public function set($key, $value){
 		$_SESSION['__TANGO__'][$key]=$value;
+		return $this;
+	}
+
+	public function delete($key){
+		if (isset($_SESSION['__TANGO__'][$key])) {
+			unset($_SESSION['__TANGO__'][$key]);
+		}
+		return $this;
 	}
 
 	public function getFlash($key){
-
+		if (isset($this->_flash[$key])) {
+			return $this->_flash[$key];
+		} else {
+			return FALSE;
+		}
 	}
 
 	public function setFlash($key, $value){
 		$_SESSION['__TANGOFLASH__'][$key]=$value;
+		return $this;
 	}
 }
