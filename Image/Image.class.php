@@ -32,10 +32,15 @@
 			if ($patch!='') {
 				$this->fotoLoad($patch);
 			}
-			//print_r($this->imagick_on_gd);
 		}
 
 		public function fotoLoad($patch){
+			//	Проверяем наличие файла
+			if (!file_exists($patch)) {
+				try{
+					throw new Exception('Отсутсвует файл - '.$patch, 101);
+				}catch(Exception $e){echo'<pre>'; echo $e; echo'</pre>'; exit;}
+			}
 			// Выбираем куда будем делать загрузку....
 			if (!$this->imagick_on_gd) {
 				$this->sposobSelect();
@@ -50,7 +55,6 @@
 			//	Индекс 2 это флаг, указывающий тип изображения.1 = GIF, 2 = JPG, 3 = PNG, 4 = SWF, 5 = PSD, 6 = BMP, 
 			//	7 = TIFF(байтовый порядок intel), 8 = TIFF(байтовый порядок motorola), 9 = JPC, 10 = JP2, 11 = JPX.
 			$this->img_info = GetImageSize($patch);
-			//print_r($this->img_info);
 			return $this;
 		}
 
@@ -77,6 +81,10 @@
 				if ($this->imagick_on_gd=='Imagick') {
 					$this->iImageResize($new_size[0], $new_size[1]);
 				}
+			}else{
+				try{
+					throw new Exception("Пришли пустые параметры размера.", 101);
+				}catch(Exception $e){echo'<pre>'; echo $e; echo'</pre>'; exit;}
 			}
 			return $this;
 		}
@@ -220,28 +228,45 @@
 		private function iImageResize($width=0, $height=0){
 			//	Получаем объект ImageMagick с изображением
 			$this->setImageResourse();
-			$this->img_resource->thumbnailImage($width, $height);
-			if ($width < 300){
-				$this->img_resource->sharpenImage(4, 1);
+			if ($this->img_info[2]==1) {
+				//	Здесь Gif А он может быть анимированным.
+				$this->img_resource = $this->img_resource->coalesceImages();
+				do {
+			        $this->img_resource->scaleImage($width, $height);
+				} while ($this->img_resource->nextImage());
+				$this->img_resource->optimizeImageLayers();
+				$this->img_resource = $this->img_resource->deconstructImages();
+			} else {
+				$this->img_resource->thumbnailImage($width, $height);
+				if ($width < 300){
+					$this->img_resource->sharpenImage(4, 1);
+				}
+				$this->img_info[0] = $width;
+				$this->img_info[1] = $height;
 			}
-			$this->img_info[0] = $width;
-			$this->img_info[1] = $height;
+			
+			
 			//print_r($this->img_resource);
 		}
 
 		/**
-		 *	Ма штабируем изображение с использованием библиотеки GD
+		 *	Маштабируем изображение с использованием библиотеки GD
 		 *
 		 *	@return void
 		 */
 		private function gdImageResize($width=0, $height=0){
 			//	Получаем ресурс изображения
 			$this->setImageResourse();
-			$image_p = @imagecreatetruecolor($width, $height);
-			imagecopyresampled($image_p, $this->img_resource, 0, 0, 0, 0, $width, $height, $this->img_info[0], $this->img_info[1]);
-			$this->img_resource = $image_p;
-			$this->img_info[0] = $width;
-			$this->img_info[1] = $height;
+			if ($this->img_resource) {
+				$image_p = @imagecreatetruecolor($width, $height);
+				imagecopyresampled($image_p, $this->img_resource, 0, 0, 0, 0, $width, $height, $this->img_info[0], $this->img_info[1]);
+				$this->img_resource = $image_p;
+				$this->img_info[0] = $width;
+				$this->img_info[1] = $height;
+			}else{
+				try{throw new Exception("Отсутсвует ресурс изображения.", 101);
+				}catch(Exception $e){echo'<pre>'; echo $e; echo'</pre>';	exit;}
+			}
 		}
 		/**
 		 *	Создаем ресурс изображения в зависимости от типа изображения
@@ -252,17 +277,19 @@
 			if ($this->imagick_on_gd=='GD') {
 				if ($this->img_info[2]==2){
 					$this->img_resource = imagecreatefromjpeg($this->img_patch);
-				}else if ($size[2]==3){
+				}else if ($this->img_info[2]==3){
 					$this->img_resource = imagecreatefrompng($this->img_patch);
-				}else if ($size[2]==1){
+				}else if ($this->img_info[2]==1){
 					$this->img_resource = imagecreatefromgif($this->img_patch);
-				}else if ($size[2]==6){
+				}else if ($this->img_info[2]==6){
 					$this->img_resource = imagecreatefromwbmp($this->img_patch);
 				}
-			}
-			if ($this->imagick_on_gd=='Imagick') {
+			}elseif ($this->imagick_on_gd=='Imagick') {
 				$this->img_resource = new Imagick();
 				$this->img_resource->readImage($this->img_patch);
+			}else{
+				try{throw new Exception("Не известен метод обработки изображения.", 101);
+				}catch(Exception $e){echo'<pre>'; echo $e; echo'</pre>';	exit;}
 			}
 		}
 

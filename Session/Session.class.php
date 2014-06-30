@@ -53,6 +53,7 @@ class TSession{
 
 	public function setFlash($key, $value){
 		$_SESSION['__TANGOFLASH__'][$key]=$value;
+		$this->_flash[$key]=$value;
 		return $this;
 	}
 }
