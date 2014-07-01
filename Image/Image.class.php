@@ -39,7 +39,7 @@
 			if (!file_exists($patch)) {
 				try{
 					throw new Exception('Отсутсвует файл - '.$patch, 101);
-				}catch(Exception $e){echo'<pre>'; echo $e; echo'</pre>'; exit;}
+				}catch(Exception $e){Tango::HPre($e);}
 			}
 			// Выбираем куда будем делать загрузку....
 			if (!$this->imagick_on_gd) {
@@ -84,7 +84,7 @@
 			}else{
 				try{
 					throw new Exception("Пришли пустые параметры размера.", 101);
-				}catch(Exception $e){echo'<pre>'; echo $e; echo'</pre>'; exit;}
+				}catch(Exception $e){Tango::HPre($e);}
 			}
 			return $this;
 		}
@@ -265,7 +265,7 @@
 				$this->img_info[1] = $height;
 			}else{
 				try{throw new Exception("Отсутсвует ресурс изображения.", 101);
-				}catch(Exception $e){echo'<pre>'; echo $e; echo'</pre>';	exit;}
+				}catch(Exception $e){Tango::HPre($e);}
 			}
 		}
 		/**
@@ -289,7 +289,7 @@
 				$this->img_resource->readImage($this->img_patch);
 			}else{
 				try{throw new Exception("Не известен метод обработки изображения.", 101);
-				}catch(Exception $e){echo'<pre>'; echo $e; echo'</pre>';	exit;}
+				}catch(Exception $e){Tango::HPre($e);}
 			}
 		}
 

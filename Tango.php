@@ -42,6 +42,9 @@ class Tango{
 		return self::$_plugins[$name];
 	}
 
+	/*
+	 *	Реестр приложения.
+	 */
 	public static function registry($name, $data=NULL){
 		if ($data===NULL) {
 			if (isset(self::$_registry[$name])) {
@@ -54,7 +57,10 @@ class Tango{
 			return $data;
 		}
 	}
-
+	/*
+	 *	Инициализируем работу с базами данных поддерживающими стандарт SQL
+	 *	Возвращаем класс
+	 */
 	public static function sql($key=0, $info=array()){
 		if (!self::$_sql[$key]) {
 			self::Load('sql');
@@ -77,7 +83,10 @@ class Tango{
 		}
 		return self::$_fileStorage;
 	}
-
+	/*
+	 *	Инициализируем работу с изображениями
+	 *	Возвращаем класс изображений
+	 */
 	public static function image(){
 		if (!self::$_image) {
 			self::Load('image');
@@ -104,15 +113,24 @@ class Tango{
 		}
 		return self::$_session;
 	}
-
+	/*
+	 *	Инициализируем работу с системой конфигурации
+	 *	Возвращаем класс конфигурации
+	 */
 	public static function config($config=''){
 		if (!self::$_config) {
 			self::Load('config');
 			self::$_config=new TConfig($config);
+		}else{
+			if ($config!='') {self::$_config->fileInfo($config);}
 		}
 		return self::$_config;
 	}
 
+	/*
+	 *	Пишем в лог файл.
+	 *	Ничего не возвращаем.
+	 */
 	public static function Log($message, $file_name=''){
 		$text = date("H:i:s").' '.$message."\n";
 		$file=Tango::config()->get('tango.log.dir', DOCUMENT_ROOT.'tmp/log').'/log_'.date("Y_m_d").$file_name.'.log';
@@ -153,6 +171,10 @@ class Tango{
 		//	Ничего не получилось, пишем в лог ошибку загрузки....
 		self::Log('Не удалось загрузить класс по запросу - "'.implode(" ", $urls).'"');
 		return FALSE;
+	}
+
+	public static function HPre($message){
+		echo'<pre>'; echo $message; echo'</pre>'; exit;
 	}
 }
 
